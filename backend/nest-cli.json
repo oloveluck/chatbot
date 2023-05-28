@@ -1,0 +1,41 @@
+{
+  "$schema": "https://json.schemastore.org/nest-cli",
+  "collection": "@nestjs/schematics",
+  "sourceRoot": "apps/document-embedding-converter/src",
+  "compilerOptions": {
+    "deleteOutDir": true,
+    "webpack": true,
+    "tsConfigPath": "apps/document-embedding-converter/tsconfig.app.json"
+  },
+  "monorepo": true,
+  "root": "apps/document-embedding-converter",
+  "projects": {
+    "document-embedding-converter": {
+      "type": "application",
+      "root": "apps/document-embedding-converter",
+      "entryFile": "main",
+      "sourceRoot": "apps/document-embedding-converter/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/document-embedding-converter/tsconfig.app.json"
+      }
+    },
+    "hand-chain": {
+      "type": "application",
+      "root": "apps/hand-chain",
+      "entryFile": "main",
+      "sourceRoot": "apps/hand-chain/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/hand-chain/tsconfig.app.json"
+      }
+    },
+    "chain": {
+      "type": "application",
+      "root": "apps/chain",
+      "entryFile": "main",
+      "sourceRoot": "apps/chain/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/chain/tsconfig.app.json"
+      }
+    }
+  }
+}
