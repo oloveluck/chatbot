@@ -5,10 +5,11 @@ from langchain.embeddings.openai import OpenAIEmbeddings
 import pinecone
 import tiktoken
 from langchain.text_splitter import RecursiveCharacterTextSplitter
+from langchain.text_splitter import TextSplitter
+import argparse
 from tqdm.auto import tqdm
 from uuid import uuid4
 
-data = load_dataset("wikipedia", "20220301.simple", split='train[:10000]')
 tiktoken.encoding_for_model('gpt-3.5-turbo')
 load_dotenv()
 tokenizer = tiktoken.get_encoding('cl100k_base')
@@ -28,20 +29,7 @@ def tiktoken_len(text):
     return len(tokens)
 
 
-text_splitter = RecursiveCharacterTextSplitter(
-        chunk_size=400,
-        chunk_overlap=20,
-        length_function=tiktoken_len,
-        separators=["\n\n", "\n", " ", ""]
-    )
-
-
-def splitText():
-    chunks = text_splitter.split_text(data[6]['text'])[:3]
-    return chunks
-
-
-def store_embeddings(index):
+def store_embeddings(index: pinecone.Index, text_splitter: TextSplitter, data):
     embed = OpenAIEmbeddings(
         model=model_name,
         openai_api_key=os.environ['OPENAI_API_KEY'])
@@ -82,10 +70,27 @@ def store_embeddings(index):
 
 
 def __main__():
+    parser = argparse.ArgumentParser(description='Description of your program.'
+                                     )
+    parser.add_argument('namespace', type=str,
+                        help='the namespace in pinecone')
+    parser.add_argument('data_name', type=str,
+                        help='the name for huggingface dataset')
+    parser.add_argument('data_path', type=str,
+                        help='the path for huggingface dataset')
+    args = parser.parse_args()
+    data = load_dataset(args.data_path, args.data_name, split='train[:10000]') 
+    # "wikipedia", "20220301.simple"
+    text_splitter = RecursiveCharacterTextSplitter(
+        chunk_size=400,
+        chunk_overlap=20,
+        length_function=tiktoken_len,
+        separators=["\n\n", "\n\t", "\n", " ", ""]
+    )
+
     pinecone.init(
             api_key=PINECONE_API_KEY,
-            environment=PINECONE_ENV
-            )
+            environment=PINECONE_ENV)
     if index_name not in pinecone.list_indexes():
         # we create a new index
         pinecone.create_index(
@@ -95,7 +100,7 @@ def __main__():
         )
     index = pinecone.Index(index_name)
     print(index.describe_index_stats())
-    store_embeddings(index)
+    store_embeddings(index, text_splitter, data)
 
 
 __main__()
